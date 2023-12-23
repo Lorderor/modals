@@ -1,0 +1,1 @@
+export const ERROR_SPACE = '26px';
