@@ -10,9 +10,11 @@ const labelCss = {
   pointerEvents: "none",
   left: "12px",
   top: "10px",
-  color: 'grey',
+  color: "grey",
   transition: "0.2s ease all",
-  zIndex: 2
+  zIndex: 2,
+  padding: "0 6px",
+  borderRadius: "10px",
 };
 
 const labelFloat = {
@@ -48,5 +50,6 @@ export const FloatLabel = (props) => {
 const FloatLabelRoot = styled('div')`
   padding-bottom: ${ERROR_SPACE};
   position: relative;
+  min-width: 230px;
 `;
 

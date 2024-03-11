@@ -1,29 +1,50 @@
 import { Modal, Spin, Flex } from "antd";
-import { useEffect, useState } from "react";
-import { AddMileAccounting } from "./MilesContent/AddMileAccounting";
-import { AddMileType } from "./MilesContent/AddMileType";
-import { AddMile } from "./MilesContent/AddMile";
-import { getMileData } from "./MilesContent/api";
-import { getAttributes } from "../utils/common";
+import { useEffect, useContext, useState } from "react";
+import { AccountingForm } from "./MilesContent/AccountingForm";
+import { TypeForm } from "./MilesContent/TypeForm";
+import { MileForm } from "./MilesContent/MileForm";
+import { getMileData, getMileFullData } from "./MilesContent/api";
+import { Summary } from "./MilesContent/Summary";
+import { titleModals } from "./MilesContent/constants";
+// import { test2 } from "../../mockData/test2";
+// import { test1 } from "../../mockData/test1";
+import { DataContext } from "./Context";
+import { prepareStepPage, milesPrepare, milesTypePrepare } from "./MilesContent/utils";
 
 export const MilesModals = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [pageModal, setPageModal] = useState(1);
-  const [data, setData] = useState();
-  const [mileTypeData, setMileTypeData] = useState({});
-  const [mileData, setMileData] = useState({});
-
-  const [dataAttr, setDataAttr] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const { state, updateState } = useContext(DataContext);
+  const { isModalOpen, pageModal, data, isFirstLoad, dataAttr } = state;
 
   const resGet = async () => {
     try {
       setIsLoading(true);
       const res = await getMileData();
-      // const res = test;
-      if (res?.data?.data) {
-        setData(res.data.data);
+      let newState = {};
+
+      if (dataAttr["data-id"] && dataAttr["data-milestype"]) {
+        const resFull = await getMileFullData(dataAttr["data-milestype"], dataAttr["data-id"]);
+        if (resFull.data.result === `ok`) {
+          const { step, milesType, miles, milesAccounting } = resFull.data;
+          const { newStep, newPageModal } = prepareStepPage(step, isFirstLoad, pageModal);
+          newState = {
+            ...newState,
+            dataStep: newStep,
+            pageModal: newPageModal,
+            isFirstLoad: false,
+            mileTypeData: milesTypePrepare(milesType),
+            mileData: milesPrepare(miles),
+            mileAccountingData: { ...milesAccounting },
+          };
+        }
       }
+      if (res?.data?.data) {
+        newState = {
+          ...newState,
+          data: res.data.data,
+        };
+      }
+      return newState;
     } catch (e) {
       console.error(e);
     } finally {
@@ -33,77 +54,57 @@ export const MilesModals = () => {
 
   useEffect(() => {
     if (isModalOpen) {
-      resGet();
+      resGet().then((newState) => {
+        updateState(newState);
+      });
     }
   }, [isModalOpen]);
 
-  const showModal = (attributes) => {
-    setDataAttr(getAttributes(attributes));
-    setIsModalOpen(true);
-  };
-
   const handlePrev = () => {
-    setPageModal(pageModal <= 1 ? 1 : pageModal - 1);
+    updateState({ pageModal: pageModal <= 1 ? 1 : pageModal - 1 });
+    resGet().then((newState) => {
+      updateState({ ...newState, pageModal: pageModal <= 1 ? 1 : pageModal - 1 });
+    });
   };
 
   const handleNext = () => {
-    setPageModal(pageModal >= 3 ? 3 : pageModal + 1);
+    updateState({ pageModal: pageModal >= 4 ? 4 : pageModal + 1 });
   };
 
   const handleCancel = () => {
-    setIsModalOpen(false);
-    setMileTypeData({})
-    setMileData({})
+    updateState({
+      mileTypeData: {},
+      mileData: {},
+      mileAccountingData: {},
+      dataStep: 1,
+      pageModal: 1,
+      isFirstLoad: true,
+      isModalOpen: false,
+    });
   };
-
-  const getElemByName = document.querySelectorAll(`.btn-react-miles-modal`);
-  getElemByName.forEach((el) => {
-    el.addEventListener(`click`, () => showModal(el.attributes));
-  });
 
   return (
     <Modal
-      title={"Add miles"}
+      title={titleModals[pageModal]}
       open={isModalOpen}
       onCancel={handleCancel}
+      width={pageModal === 4 ? `auto` : undefined}
       footer={``}
     >
       {isLoading || !data ? (
-        <Flex
-          style={{ width: "100%", height: "300px" }}
-          justify="center"
-          align="center"
-        >
+        <Flex style={{ width: "100%", height: "300px" }} justify="center" align="center">
           <Spin size={`large`} />
         </Flex>
       ) : (
         <>
-          {pageModal === 3 ? (
-            <AddMileAccounting
-              data={data}
-              handleNext={handleNext}
-              handlePrev={handlePrev}
-              dataAttr={dataAttr}
-            />
-          ) : pageModal === 2 && mileTypeData ? (
-            <AddMile
-              data={data}
-              mileTypeData={mileTypeData}
-              handleNext={handleNext}
-              handlePrev={handlePrev}
-              mileData={mileData}
-              setMileData={setMileData}
-              dataAttr={dataAttr}
-            />
+          {pageModal === 4 ? (
+            <Summary handleCancel={handleCancel} />
+          ) : pageModal === 3 ? (
+            <AccountingForm handlePrev={handlePrev} />
+          ) : pageModal === 2 ? (
+            <MileForm handlePrev={handlePrev} />
           ) : (
-            <AddMileType
-              data={data}
-              handleNext={handleNext}
-              handlePrev={handlePrev}
-              setMileTypeData={setMileTypeData}
-              mileTypeData={mileTypeData}
-              dataAttr={dataAttr}
-            />
+            <TypeForm handleNext={handleNext} />
           )}
         </>
       )}

@@ -1,32 +1,30 @@
-import { Col } from "antd";
+import { Flex } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import composeRules from "../../utils/composeRules";
 import addRequired from "../../utils/addRequired";
 import { FormInput } from "../../domain/Field/Input";
 import { SelectInput as SelectInputComponent } from "../../components/Form/SelectInput";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Footer } from "./Footer";
 import { sendMileTypeData } from "./api";
+import { DataContext } from "../Context";
 
 const initMileTypeData = {
-  mileType: `default`,
+  milesType: `default`,
   mileName: ``,
   mileInitial: ``,
   mileDescription: ``,
   notes: ``,
 };
 
-export const AddMileType = ({
-  data,
-  handleNext,
-  setMileTypeData,
-  handlePrev,
-  mileTypeData,
-  dataAttr,
-}) => {
+export const TypeForm = ({ handleNext, isRow }) => {
+  const { state, updateState } = useContext(DataContext);
+  const { data, mileTypeData, dataStep, dataAttr } = state;
   const [isReadOnly, setIsReadOnly] = useState(false);
+  const isDisabled = dataStep !== 1;
+
   const { handleSubmit, watch, control, setValue } = useForm({
-    defaultValues: mileTypeData?.mileType ? mileTypeData : initMileTypeData,
+    defaultValues: mileTypeData?.milesType ? mileTypeData : initMileTypeData,
   });
 
   const keysTypes = Object.keys(data || {});
@@ -39,43 +37,44 @@ export const AddMileType = ({
 
   const options = [{ value: `default`, label: `Select miles type` }, ...types];
 
-  const mileType = watch("mileType");
+  const milesType = watch("milesType");
 
   useEffect(() => {
-    if (mileType) {
-      const tmp = mileType !== `default` && data[mileType]?.milesType;
+    if (milesType) {
+      const tmp = milesType !== `default` && data[milesType]?.milesType;
 
       Object.keys(initMileTypeData).forEach((el) => {
-        if (el !== `mileType`)
-          setValue(el, mileType !== `default` ? tmp[el] : ``);
+        if (el !== `milesType`) setValue(el, milesType !== `default` ? tmp[el] : ``);
       });
-      setIsReadOnly(mileType !== `default`);
+      setIsReadOnly(milesType !== `default`);
     }
-  }, [setValue, mileType]);
+  }, [setValue, milesType]);
 
   const onSubmit = async (values) => {
-    const formData = new FormData();
-    const offer_id = window.location.pathname.split(`/offer/`)[1];
-    formData.append(`offer_id`, offer_id);
-    formData.append(`ticketInfoId`, dataAttr["data-id"]);
-    Object.keys(values).forEach((el) => {
-      formData.append(
-        el,
-        el === `mileType` && values[el] === `default` ? `` : values[el]
-      );
-    });
-    const res = await sendMileTypeData(formData);
-    if (res.status === 200) {
-      setMileTypeData(values);
-      handleNext();
+    if (!isDisabled) {
+      const formData = new FormData();
+      const offer_id = window.location.pathname.split(`/offer/`)[1];
+      formData.append(`offer_id`, offer_id);
+      formData.append(`ticketInfoId`, dataAttr["data-id"]);
+      Object.keys(values).forEach((el) => {
+        formData.append(el, el === `milesType` && values[el] === `default` ? `` : values[el]);
+      });
+      const res = await sendMileTypeData(formData);
+      if (res.status === 200) {
+        updateState({
+          mileTypeData: values,
+          dataStep: dataStep === 1 ? 2 : dataStep,
+          pageModal: 2,
+        });
+      }
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Col>
+      <Flex vertical={!isRow} wrap={`wrap`} gap={isRow ? `8px` : 0} width={`100%`}>
         <Controller
-          name="mileType"
+          name="milesType"
           control={control}
           render={({ field, fieldState }) => {
             return (
@@ -85,6 +84,7 @@ export const AddMileType = ({
                 fieldState={fieldState}
                 defaultValue={field.value}
                 {...field}
+                disabled={isDisabled}
               />
             );
           }}
@@ -95,12 +95,7 @@ export const AddMileType = ({
           rules={composeRules(addRequired)}
           render={({ field, fieldState }) => {
             return (
-              <FormInput
-                label="Mile Name"
-                {...field}
-                disabled={isReadOnly}
-                fieldState={fieldState}
-              />
+              <FormInput label="Mile Name" {...field} disabled={isReadOnly || isDisabled} fieldState={fieldState} />
             );
           }}
         />
@@ -109,12 +104,7 @@ export const AddMileType = ({
           control={control}
           render={({ field, fieldState }) => {
             return (
-              <FormInput
-                label="Mile Initial"
-                {...field}
-                disabled={isReadOnly}
-                fieldState={fieldState}
-              />
+              <FormInput label="Mile Initial" {...field} disabled={isReadOnly || isDisabled} fieldState={fieldState} />
             );
           }}
         />
@@ -126,7 +116,7 @@ export const AddMileType = ({
               <FormInput
                 label="Mile Description"
                 {...field}
-                disabled={isReadOnly}
+                disabled={isReadOnly || isDisabled}
                 fieldState={fieldState}
               />
             );
@@ -136,18 +126,11 @@ export const AddMileType = ({
           name="notes"
           control={control}
           render={({ field, fieldState }) => {
-            return (
-              <FormInput
-                label="Notes"
-                {...field}
-                disabled={isReadOnly}
-                fieldState={fieldState}
-              />
-            );
+            return <FormInput label="Notes" {...field} disabled={isReadOnly || isDisabled} fieldState={fieldState} />;
           }}
         />
-      </Col>
-      <Footer handlePrev={handlePrev} />
+      </Flex>
+      {!isRow && <Footer handleNext={isDisabled ? handleNext : undefined} />}
     </form>
   );
 };
