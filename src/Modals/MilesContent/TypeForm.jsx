@@ -44,7 +44,7 @@ export const TypeForm = ({ handleNext, isRow }) => {
       const tmp = milesType !== `default` && data[milesType]?.milesType;
 
       Object.keys(initMileTypeData).forEach((el) => {
-        if (el !== `milesType`) setValue(el, milesType !== `default` ? tmp[el] : ``);
+        if (el !== `milesType`) setValue(el, milesType !== `default` && tmp ? tmp[el] : ``);
       });
       setIsReadOnly(milesType !== `default`);
     }

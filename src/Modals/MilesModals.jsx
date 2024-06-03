@@ -6,10 +6,9 @@ import { MileForm } from "./MilesContent/MileForm";
 import { getMileData, getMileFullData } from "./MilesContent/api";
 import { Summary } from "./MilesContent/Summary";
 import { titleModals } from "./MilesContent/constants";
-// import { test2 } from "../../mockData/test2";
-// import { test1 } from "../../mockData/test1";
 import { DataContext } from "./Context";
 import { prepareStepPage, milesPrepare, milesTypePrepare } from "./MilesContent/utils";
+// import { testFull, testInfo } from "../../mockData/test";
 
 export const MilesModals = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -20,10 +19,12 @@ export const MilesModals = () => {
     try {
       setIsLoading(true);
       const res = await getMileData();
+      // const res = { data: testInfo };
       let newState = {};
 
       if (dataAttr["data-id"] && dataAttr["data-milestype"]) {
         const resFull = await getMileFullData(dataAttr["data-milestype"], dataAttr["data-id"]);
+        // const resFull = { data: testFull };
         if (resFull.data.result === `ok`) {
           const { step, milesType, miles, milesAccounting } = resFull.data;
           const { newStep, newPageModal } = prepareStepPage(step, isFirstLoad, pageModal);
@@ -83,7 +84,7 @@ export const MilesModals = () => {
     });
   };
 
-  return (
+  return isModalOpen ? (
     <Modal
       title={titleModals[pageModal]}
       open={isModalOpen}
@@ -109,5 +110,5 @@ export const MilesModals = () => {
         </>
       )}
     </Modal>
-  );
+  ) : null;
 };

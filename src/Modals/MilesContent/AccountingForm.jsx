@@ -40,6 +40,7 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
     handleSubmit,
     watch,
     control,
+    setValue,
     formState: { isDirty },
   } = useForm({
     defaultValues: mileAccountingData?.soldQTY ? mileAccountingData : initMileAccountingData,
@@ -47,12 +48,29 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
   const isChange = dataStep >= 4;
 
   const status = watch("status");
+  // Слежение за изменениями полей rate, soldQTY и bookingTaxAmount
+  const rate = watch("rate");
+  const soldQTY = watch("soldQTY");
+  const bookingTaxAmount = watch("bookingTaxAmount");
+  const bookingLC = watch("bookingLC");
+
   useEffect(() => {
     if (status) {
       setIsReadOnly(+status === 0);
     }
   }, [status]);
 
+  useEffect(() => {
+    // Вычисление totalAmount
+    const totalAmount = (rate || 0) * (soldQTY || 0) + (bookingTaxAmount || 0);
+    setValue("totalAmount", totalAmount);
+  }, [rate, soldQTY, bookingTaxAmount, setValue]);
+
+  useEffect(() => {
+    if (bookingLC === ``) {
+      setValue(`bookingLC`, dataAttr["data-bookinglc"] || ``);
+    }
+  }, []);
   const onSubmit = async (values) => {
     const formData = new FormData();
     formData.append(`ticketInfoId`, dataAttr["data-id"]);
