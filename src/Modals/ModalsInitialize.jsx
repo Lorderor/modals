@@ -56,7 +56,7 @@ export const ModalsInitialize = () => {
   }, [state.dataStep, state.isModalOpen, buttonSpanRefs.current]);
 
   useEffect(() => {
-    if (state.pageModal === 2 && buttonRefs.current && state.isModalOpen && state.dataAttr["data-milestype"] === ``) {
+    if (state.pageModal >= 2 && buttonRefs.current && state.isModalOpen && state.dataAttr["data-milestype"] === ``) {
       buttonRefs.current?.setAttribute("data-milestype", state?.mileTypeData?.milesType);
     }
   }, [state.pageModal, state.isModalOpen, buttonRefs.current]);

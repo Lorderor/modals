@@ -62,9 +62,16 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
 
   useEffect(() => {
     // Вычисление totalAmount
-    const totalAmount = (rate || 0) * (soldQTY || 0) + (bookingTaxAmount || 0);
+    const totalAmount = (+rate || 0) * (+soldQTY || 0) + (+bookingTaxAmount || 0);
     setValue("totalAmount", totalAmount);
   }, [rate, soldQTY, bookingTaxAmount, setValue]);
+
+  // Функция для предотвращения ввода нечисловых символов
+  const preventNonNumericInput = (e) => {
+    if (!/[0-9.]|\./.test(e.key)) {
+      e.preventDefault();
+    }
+  };
 
   useEffect(() => {
     if (bookingLC === ``) {
@@ -96,7 +103,14 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
             control={control}
             rules={composeRules(addRequired)}
             render={({ field, fieldState }) => {
-              return <FormInput label="Sold QTY" {...field} fieldState={fieldState} />;
+              return (
+                <FormInput
+                  label="Sold QTY"
+                  onKeyPress={preventNonNumericInput}
+                  {...field}
+                  fieldState={fieldState}
+                />
+              );
             }}
           />
           <Controller
@@ -104,7 +118,14 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
             control={control}
             rules={composeRules(addRequired)}
             render={({ field, fieldState }) => {
-              return <FormInput label="Rate" {...field} fieldState={fieldState} />;
+              return (
+                <FormInput
+                  label="Rate"
+                  onKeyPress={preventNonNumericInput}
+                  {...field}
+                  fieldState={fieldState}
+                />
+              );
             }}
           />
           <Controller
@@ -188,7 +209,14 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
             name="bookingTaxAmount"
             control={control}
             render={({ field, fieldState }) => {
-              return <FormInput label="Booking Tax Amount" {...field} fieldState={fieldState} />;
+              return (
+                <FormInput
+                  label="Booking Tax Amount"
+                  onKeyPress={preventNonNumericInput}
+                  {...field}
+                  fieldState={fieldState}
+                />
+              );
             }}
           />
           <Controller
