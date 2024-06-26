@@ -29,7 +29,7 @@ export const FloatLabel = (props) => {
   const { children, label, value, status, helperText } = props;
 
   const css =
-    focus || (value && value.length !== 0)
+    focus || (value !==undefined && value.length !== 0)
       ? { ...labelCss, ...labelFloat }
       : labelCss;
 

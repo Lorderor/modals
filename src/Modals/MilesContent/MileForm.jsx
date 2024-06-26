@@ -24,11 +24,12 @@ const initMileData = {
   password: ``,
   note: ``,
   pinNumber: ``,
+  archived: 0,
 };
 
 export const MileForm = ({ handlePrev, isRow }) => {
   const { state, updateState } = useContext(DataContext);
-  const { data, mileTypeData, mileData, dataAttr, dataStep } = state;
+  const { data, mileTypeData, mileData,pageModal, dataAttr, dataStep } = state;
   const {
     handleSubmit,
     watch,
@@ -78,7 +79,7 @@ export const MileForm = ({ handlePrev, isRow }) => {
     });
     const res = isChange ? await changeMileData(formData) : await sendMileData(formData);
     if (res.status === 200) {
-      updateState({ mileData: values, dataStep: isChange ? dataStep : 3, pageModal: 3 });
+      updateState({ mileData: values, dataStep: isChange ? dataStep : 3, pageModal: isChange ? pageModal: 3 });
     }
   };
 

@@ -18,6 +18,7 @@ const initMileAccountingData = {
   dateItineraryComplete: ``,
   usedByAgent: ``,
   status: `0`,
+  statusFlag: 0,
   note: ``,
   zohoBooking: ``,
   bookingLC: ``,
@@ -30,11 +31,12 @@ const initMileAccountingData = {
   expectedDateRefundTax: ``,
   refundTaxes: ``,
   amount: ``,
+  archived: 0,
 };
 
 export const AccountingForm = ({ handlePrev, isRow }) => {
   const { state, updateState } = useContext(DataContext);
-  const { mileAccountingData, dataStep, dataAttr } = state;
+  const { mileAccountingData, dataStep, dataAttr,pageModal } = state;
   const [isReadOnly, setIsReadOnly] = useState(true);
   const {
     handleSubmit,
@@ -47,7 +49,7 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
   });
   const isChange = dataStep >= 4;
 
-  const status = watch("status");
+  const status = watch("statusFlag");
   // Слежение за изменениями полей rate, soldQTY и bookingTaxAmount
   const rate = watch("rate");
   const soldQTY = watch("soldQTY");
@@ -55,8 +57,9 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
   const bookingLC = watch("bookingLC");
 
   useEffect(() => {
-    if (status) {
+    if (status >= 0) {
       setIsReadOnly(+status === 0);
+      setValue('status',status)
     }
   }, [status]);
 
@@ -89,7 +92,7 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
       updateState({
         mileAccountingData: values,
         dataStep: isChange ? dataStep : dataStep + 1,
-        pageModal: 4,
+        pageModal: isChange ? pageModal : 4,
       });
     }
   };
@@ -165,14 +168,14 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
             }}
           />
           <Controller
-            name="status"
+            name="statusFlag"
             control={control}
             render={({ field, fieldState }) => {
               return (
                 <SelectInputComponent
                   options={[
-                    { value: `0`, label: "Open" },
-                    { value: `1`, label: "Refund" },
+                    { value: 0, label: "Open" },
+                    { value: 1, label: "Refund" },
                   ]}
                   label="Status"
                   fieldState={fieldState}

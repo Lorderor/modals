@@ -15,6 +15,7 @@ const initMileTypeData = {
   mileInitial: ``,
   mileDescription: ``,
   notes: ``,
+  archived: 0,
 };
 
 export const TypeForm = ({ handleNext, isRow }) => {
