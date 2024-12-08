@@ -8,7 +8,7 @@ import { FormInput } from "../../domain/Field/Input";
 import { SelectInput as SelectInputComponent } from "../../components/Form/SelectInput";
 import { Footer } from "./Footer";
 import { useContext, useEffect, useState } from "react";
-import { changeMileAccountingData, sendMileAccountingData } from "./api";
+import { changeMileAccountingData, getInfoOfferData, sendMileAccountingData } from "./api";
 import { DataContext } from "../Context";
 
 const initMileAccountingData = {
@@ -36,8 +36,9 @@ const initMileAccountingData = {
 
 export const AccountingForm = ({ handlePrev, isRow }) => {
   const { state, updateState } = useContext(DataContext);
-  const { mileAccountingData, dataStep, dataAttr,pageModal } = state;
+  const { mileAccountingData, dataStep, dataAttr, pageModal } = state;
   const [isReadOnly, setIsReadOnly] = useState(true);
+  const [wasGetInfo, setWasGetInfo] = useState(false);
   const {
     handleSubmit,
     watch,
@@ -55,11 +56,36 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
   const soldQTY = watch("soldQTY");
   const bookingTaxAmount = watch("bookingTaxAmount");
   const bookingLC = watch("bookingLC");
+  const bookingPNR = watch("bookingPNR");
+  const carrierPNR = watch("carrierPNR");
+  const dateItineraryComplete = watch("dateItineraryComplete");
+
+  useEffect(() => {
+    if (bookingPNR && bookingPNR.length > 6) {
+      setValue("bookingPNR", +String(bookingPNR).slice(0, 6));
+    }
+  }, [bookingPNR]);
+  useEffect(() => {
+    if (carrierPNR && carrierPNR.length > 6) {
+      setValue("carrierPNR", +String(carrierPNR).slice(0, 6));
+    }
+  }, [carrierPNR]);
+
+  useEffect(() => {
+    if (dataAttr["data-offer"] && !dateItineraryComplete && !wasGetInfo) {
+      const data = getInfoOfferData(dataAttr["data-offer"]);
+      if (data && data.dateTo) {
+        setValue("dateItineraryComplete", data.dateTo);
+        setWasGetInfo(true);
+      }
+      console.log(`info data`, data);
+    }
+  }, [dataAttr, dateItineraryComplete, wasGetInfo]);
 
   useEffect(() => {
     if (status >= 0) {
       setIsReadOnly(+status === 0);
-      setValue('status',status)
+      setValue("status", status);
     }
   }, [status]);
 
@@ -107,12 +133,7 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
             rules={composeRules(addRequired)}
             render={({ field, fieldState }) => {
               return (
-                <FormInput
-                  label="Sold QTY"
-                  onKeyPress={preventNonNumericInput}
-                  {...field}
-                  fieldState={fieldState}
-                />
+                <FormInput label="Sold QTY" onKeyPress={preventNonNumericInput} {...field} fieldState={fieldState} />
               );
             }}
           />
@@ -121,14 +142,7 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
             control={control}
             rules={composeRules(addRequired)}
             render={({ field, fieldState }) => {
-              return (
-                <FormInput
-                  label="Rate"
-                  onKeyPress={preventNonNumericInput}
-                  {...field}
-                  fieldState={fieldState}
-                />
-              );
+              return <FormInput label="Rate" onKeyPress={preventNonNumericInput} {...field} fieldState={fieldState} />;
             }}
           />
           <Controller
@@ -240,14 +254,18 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
             name="bookingPNR"
             control={control}
             render={({ field, fieldState }) => {
-              return <FormInput label="Booking PNR" {...field} fieldState={fieldState} />;
+              return (
+                <FormInput onKeyPress={preventNonNumericInput} label="Booking PNR" {...field} fieldState={fieldState} />
+              );
             }}
           />
           <Controller
             name="carrierPNR"
             control={control}
             render={({ field, fieldState }) => {
-              return <FormInput label="Carrier PNR" {...field} fieldState={fieldState} />;
+              return (
+                <FormInput onKeyPress={preventNonNumericInput} label="Carrier PNR" {...field} fieldState={fieldState} />
+              );
             }}
           />
           <Controller
