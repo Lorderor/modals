@@ -91,7 +91,7 @@ export const AccountingForm = ({ handlePrev, isRow }) => {
 
   useEffect(() => {
     // Вычисление totalAmount
-    const totalAmount = (+rate || 0) * (+soldQTY || 0) + (+bookingTaxAmount || 0);
+    const totalAmount = (+rate || 0) * (+(soldQTY.replace(/\s+/g, '')) || 0) + (+bookingTaxAmount || 0);
     setValue("totalAmount", totalAmount);
   }, [rate, soldQTY, bookingTaxAmount, setValue]);
 
