@@ -11,6 +11,10 @@ const CHANGE_MILE_URL = "miles-type-new/change-mile/";
 const SEND_MILE_ACCOUNTING_URL = "miles-type-new/add-accounting/";
 const CHANGE_MILE_ACCOUNTING_URL= "miles-type-new/change-mile-accounting/";
 
+// const axiosInstance = axios.create({
+//   baseURL: `/api/`,
+// });
+
 const axiosInstance = axios.create({
   baseURL: `/`,
 });
@@ -44,4 +48,4 @@ export const changeMileAccountingData= (data) =>
     axiosInstance.post(CHANGE_MILE_ACCOUNTING_URL, data, config);
 
 export const getInfoOfferData= (id) =>
-    axiosInstance.get(`${GET_OFFER_INFO_URL}/?offerID=${id}`);
+    axiosInstance.get(`${GET_OFFER_INFO_URL}?offerID=${id}`);
